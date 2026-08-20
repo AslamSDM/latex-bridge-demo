@@ -84,4 +84,24 @@ describe("buildProjectZip", () => {
     expect(names.some((n) => n.includes(".git"))).toBe(false);
     expect(proj.sizeBytes).toBe(proj.zipBytes.byteLength);
   });
+
+  it("re-roots the archive when the root file lives in a subfolder", async () => {
+    const dir = makeProject({
+      "README.md": "not part of the project",
+      "samples/math-paper/main.tex": "\\documentclass{article}\n\\begin{document}\n\\input{sections/intro}\n\\end{document}",
+      "samples/math-paper/sections/intro.tex": "hello",
+      "samples/math-paper/figures/plot.pdf": "pdf",
+      "samples/math-paper/bib/refs.bib": "@article{x}",
+    });
+    const proj = await buildProjectZip(dir, "samples/math-paper/main.tex");
+    expect(proj.rootFile).toBe("main.tex");
+    const zip = await JSZip.loadAsync(proj.zipBytes);
+    const names = Object.keys(zip.files);
+    expect(names).toContain("main.tex");
+    expect(names).toContain("sections/intro.tex");
+    expect(names).toContain("figures/plot.pdf");
+    expect(names).toContain("bib/refs.bib");
+    expect(names.some((n) => n.startsWith("samples/"))).toBe(false);
+    expect(names.some((n) => n.includes("README.md"))).toBe(false);
+  });
 });

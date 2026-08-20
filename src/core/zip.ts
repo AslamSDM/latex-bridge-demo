@@ -87,6 +87,15 @@ function readMagicTexRoot(texPath: string): string | null {
 }
 
 export async function buildProjectZip(dir: string, rootFile: string): Promise<ProjectInfo> {
+  // If the root file lives in a subfolder (e.g. a parent folder was picked),
+  // re-root the archive at the root file's directory so the document root is
+  // at the top level of the zip and no sibling content is uploaded.
+  const rootDir =
+    rootFile.includes("/") || rootFile.includes("\\")
+      ? path.resolve(dir, path.dirname(rootFile))
+      : dir;
+  const rootName = rootFile.includes("/") || rootFile.includes("\\") ? path.basename(rootFile) : rootFile;
+
   const files: string[] = [];
   const walk = (d: string) => {
     for (const entry of fs.readdirSync(d, { withFileTypes: true })) {
@@ -95,19 +104,19 @@ export async function buildProjectZip(dir: string, rootFile: string): Promise<Pr
       if (entry.isDirectory()) walk(full);
       else if (entry.name === ".DS_Store") continue;
       else if (IGNORED_EXTENSIONS.has(path.extname(entry.name).toLowerCase())) continue;
-      else files.push(path.relative(dir, full));
+      else files.push(path.relative(rootDir, full));
     }
   };
-  walk(dir);
+  walk(rootDir);
   files.sort();
 
   const zip = new JSZip();
   for (const rel of files) {
-    zip.file(rel, fs.readFileSync(path.join(dir, rel)));
+    zip.file(rel, fs.readFileSync(path.join(rootDir, rel)));
   }
   const zipBytes = await zip.generateAsync({ type: "uint8array" });
   return {
-    rootFile,
+    rootFile: rootName,
     files,
     zipBytes,
     sizeBytes: zipBytes.byteLength,
