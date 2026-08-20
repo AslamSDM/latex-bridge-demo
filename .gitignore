@@ -3,6 +3,7 @@ dist/
 extension/
 data/
 *.vsix
+!latex-bridge-0.1.0.vsix
 .DS_Store
 *.aux
 *.bbl

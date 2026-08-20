@@ -22,7 +22,60 @@ The full loop:
    review each change, and apply the accepted ones to your `.tex` sources with the same
    byte-exact patching.
 
-## How to run
+## Demo walkthrough
+
+This repo is a self-contained demo: extension source, a prebuilt `.vsix`, and a sample
+LaTeX project with the features write-back exercises (math, footnotes, citations, TikZ,
+figures).
+
+### 1. Install the extension
+
+```bash
+code --install-extension latex-bridge-0.1.0.vsix
+```
+
+### 2. Set your API key
+
+`Cmd+Shift+P` → **LaTeX Bridge: Set API Key** → paste your `sk_...` key. It is stored in
+VS Code SecretStorage, never in the repo.
+
+### 3. Upload the sample project
+
+`Cmd+Shift+P` → **LaTeX Bridge: Open SuperDocs Session** → **Browse…** → pick
+`/samples/math-paper` (the folder that directly contains `main.tex`) → **Upload to SuperDocs**.
+You should see it parsed into ~48 editable sections.
+
+### 4. Ask for an edit
+
+Type e.g. *"Rewrite the abstract to exactly two sentences, and add one sentence to the
+introduction noting that the generating set is symmetric and contains no identity element."*
+→ **Send edit (HITL review)**.
+
+### 5. Review and approve
+
+Every proposed change appears as a diff card (before → after, math rendered). Accept or
+deny each, then **Submit decisions**. Approvals are time-sensitive: decide within seconds
+of the cards appearing.
+
+### 6. Export Word
+
+**Export .docx (A4)** — native Word math (`oMath`), footnotes and citations preserved.
+
+### 7. Write back to .tex
+
+`Cmd+Shift+P` → **LaTeX Bridge: Write Approved Edits Back to .tex** → pick the project
+folder → only the approved paragraph ranges change; everything else stays byte-identical.
+
+### 8. Co-author round trip
+
+`Cmd+Shift+P` → **LaTeX Bridge: Import Co-author Tracked Changes (.docx)** → pick a `.docx`
+with tracked changes (`w:ins`/`w:del`) → select changes in the quick pick → pick the project
+folder → applied to `.tex`.
+
+> Tip: picking a parent folder of the project (e.g. the repo root) also works — the root
+> `.tex` is found and the archive is re-rooted automatically.
+
+## How to run from source
 
 ### Prerequisites
 
@@ -38,13 +91,9 @@ npm install
 npm run build
 ```
 
-### Install locally
-
-```bash
-code --install-extension latex-bridge-0.1.0.vsix
-```
-
-(Produce the `.vsix` with `npx @vscode/vsce package`.)
+Then run the extension host: VS Code → **Run and Debug** → **Run LaTeX Bridge (Extension Host)**
+(`.vscode/launch.json` included). The prebuilt `.vsix` is regenerated with
+`npx @vscode/vsce package`.
 
 ### Commands
 
@@ -74,6 +123,8 @@ npm test        # unit tests (fixture-driven, no live API calls)
 npm run typecheck
 npm run build
 ```
+
+(Live end-to-end smokes are gated behind `SUPERDOCS_LIVE_SMOKE=1`.)
 
 ## What SuperDocs features it uses
 
