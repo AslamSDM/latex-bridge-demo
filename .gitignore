@@ -12,3 +12,4 @@ data/
 *.toc
 *.pdf
 !samples/math-paper/figures/spectrum.pdf
+.vscode-test/
